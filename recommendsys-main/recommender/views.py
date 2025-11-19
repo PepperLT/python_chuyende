@@ -267,32 +267,3 @@ def recs_funksvd(request, user_id, num=6):
         }, safe=False)
 
 # -----------------------------------------------------------------------------------------
-
-def user_analytics(request, user_id):
-    """Alternative analytics view with FunkSVD"""
-    matrix_recs = []
-    try:
-        funksvd = FunkSVDRecs()
-        funksvd.set_save_path('./models/funkSVD/model/')
-        recs = funksvd.recommend_items(int(user_id), num=6)
-
-        for movie_id, data in recs:
-            movie = Movie.objects.filter(movie_id=movie_id).first()
-            if movie:
-                matrix_recs.append({
-                    'movie_id': movie_id,
-                    'poster': getattr(movie, 'poster', None),
-                    'prediction': data['prediction'],
-                    'title': movie.title
-                })
-        print(f"DEBUG: {len(matrix_recs)} movies for user {user_id}")
-    except Exception as e:
-        print(f"⚠️ FunkSVD error: {e}")
-        import traceback
-        traceback.print_exc()
-
-    context = {
-        'user_id': user_id,
-        'matrix_recs': matrix_recs
-    }
-    return render(request, 'analytics/user.html', context)
